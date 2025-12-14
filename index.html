@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderator Command Center</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- 1. Navigation Sidebar -->
+        <nav class="nav-sidebar">
+            <div class="logo">
+                <span class="logo-icon">🛡️</span> ModCenter
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Main</div>
+                <a href="#" class="nav-item active" onclick="switchView('dashboard')">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('feed')">
+                    <span class="icon">📝</span> Content Feed
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('users')">
+                    <span class="icon">👥</span> Users
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Management</div>
+                <a href="#" class="nav-item" onclick="switchView('logs')">
+                    <span class="icon">📜</span> Audit Logs
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('settings')">
+                    <span class="icon">⚙️</span> Settings
+                </a>
+            </div>
+
+            <div class="nav-footer">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=2d88ff&color=fff" class="avatar-small">
+                    <div class="user-details">
+                        <span class="name">Admin User</span>
+                        <span class="role">Super Mod</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 2. Main Content Area -->
+        <main class="main-stage">
+
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section active">
+                <header class="stage-header">
+                    <h1>Overview</h1>
+                    <div class="header-actions">
+                        <button class="btn-icon">🔔</button>
+                    </div>
+                </header>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="label">Total Users</div>
+                        <div class="value" id="kpi-users">--</div>
+                        <div class="trend up">↑ 12% this week</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">Posts Today</div>
+                        <div class="value" id="kpi-posts">--</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">Pending Review</div>
+                        <div class="value warning" id="kpi-pending">--</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">AI Flagged</div>
+                        <div class="value danger" id="kpi-flagged">--</div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-card wide">
+                        <h3>Toxicity Trends (7 Days)</h3>
+                        <div id="activity-chart" class="chart-box"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: FEED -->
+            <div id="view-feed" class="view-section" style="display:none;">
+                <header class="stage-header sticky">
+                    <div class="header-left">
+                        <h1>Content Feed</h1>
+                        <div class="tabs">
+                            <button class="tab active" onclick="filterFeed('')">All</button>
+                            <button class="tab" onclick="filterFeed('pending')">Pending</button>
+                            <button class="tab" onclick="filterFeed('flagged')">Risk High</button>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="toggleBulkMode()">Select</button>
+                    </div>
+                </header>
+
+                <div id="bulk-toolbar" class="bulk-toolbar hidden">
+                    <span id="selected-count">0 selected</span>
+                    <div class="actions">
+                        <button class="btn btn-sm btn-approve" onclick="bulkAction('approved')">Approve
+                            Selected</button>
+                        <button class="btn btn-sm btn-reject" onclick="bulkAction('rejected')">Reject Selected</button>
+                    </div>
+                </div>
+
+                <div id="feed-container" class="feed-list">
+                    <!-- Posts go here -->
+                </div>
+            </div>
+
+            <!-- VIEW: USERS -->
+            <div id="view-users" class="view-section" style="display:none;">
+                <header class="stage-header">
+                    <h1>User Database</h1>
+                    <input type="text" placeholder="Search users..." class="search-input">
+                </header>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Trust Score</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <!-- Users go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW: SETTINGS -->
+            <div id="view-settings" class="view-section" style="display:none;">
+                <header class="stage-header">
+                    <h1>Configuration</h1>
+                </header>
+                <div class="settings-panel">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Simulation Mode</h3>
+                            <p>Prevent actual database deletions or bans. Good for training.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-simulation">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Strict Risk Filtering</h3>
+                            <p>Automatically flag posts with aggressively toxic keywords.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-strict">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Executive Reporting</h3>
+                            <p>Generate AI-powered system reports.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openReportModal()">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: AUDIT LOGS -->
+            <div id="view-logs" class="view-section" style="display:none;">
+                <header class="stage-header">
+                    <h1>System Audit Logs</h1>
+                    <button class="btn btn-secondary" onclick="loadLogs()">Refresh</button>
+                </header>
+                <div class="logs-container" id="logs-list">
+                    <!-- Logs go here -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- MODALS -->
+        <dialog id="analysis-modal" class="modal">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h2>🧠 AI User Analysis</h2>
+                    <button class="btn-icon" onclick="closeModal()">×</button>
+                </header>
+                <div class="modal-body" id="modal-body">
+                    <div class="loader-spinner"></div>
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    <button class="btn btn-reject" id="modal-ban-btn">Ban User</button>
+                </footer>
+            </div>
+        </dialog>
+
+        <dialog id="report-modal" class="modal">
+            <div class="modal-content" style="width: 600px;">
+                <header class="modal-header">
+                    <h2>📄 Executive Summary</h2>
+                    <button class="btn-icon" onclick="document.getElementById('report-modal').close()">×</button>
+                </header>
+                <div class="modal-body" id="report-body">
+                    <div class="loader-spinner"></div>
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('report-modal').close()">Close</button>
+                    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+                </footer>
+            </div>
+        </dialog>
+
+        <!-- 3. Context Sidebar (Right Panel) -->
+        <aside class="context-sidebar">
+            <div class="context-header">
+                <h3>Global Context</h3>
+            </div>
+            <div class="context-body">
+                <div class="system-status">
+                    <div class="status-item">
+                        <span class="dot green"></span>
+                        <span>System Operational</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="dot green"></span>
+                        <span>Master AI: Online</span>
+                    </div>
+                </div>
+
+                <div class="mini-section">
+                    <h4>Recent Alerts</h4>
+                    <div class="alert-list">
+                        <div class="alert-item">
+                            <span class="icon">⚠️</span>
+                            <div class="text">Spam spike detected in #general</div>
+                        </div>
+                        <div class="alert-item">
+                            <span class="icon">👤</span>
+                            <div class="text">User @GlitchMaster reported</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mini-section">
+                    <h4>Keyboard Shortcuts</h4>
+                    <div class="shortcut-list">
+                        <div class="shortcut"><kbd>A</kbd> Approve</div>
+                        <div class="shortcut"><kbd>R</kbd> Reject</div>
+                        <div class="shortcut"><kbd>Space</kbd> Next Post</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
